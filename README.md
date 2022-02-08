@@ -30,7 +30,7 @@ To do so:
 2. Next, start the Jupyter Server with the following command:
 
    ```bash
-   docker run -it -d -p 80808:8080/tcp \
+   docker run --rm -it -d -p 80808:8080/tcp \
        -v ${PWD}/results:/home/jupyter/peca_classroom/experiments \
        molguin/peca-classroom
    ```
@@ -77,7 +77,7 @@ Below you will find step-by-step instructions on the workflow you should follow 
    ``` bash
    docker run --rm -it --network host \
        -v ${PWD}/results/<experiment_name>:/opt/plant_metrics:rw \
-       -e CONTROLLER_ADDR=<region> \
+       -e CONTROLLER_ADDR=$(dig +short <region>) \
        -e CONTROLLER_PORT=50000 \
        -e TICK_RATE=120 \
        -e SAMPLE_RATE=20 \
@@ -91,7 +91,8 @@ Below you will find step-by-step instructions on the workflow you should follow 
    A couple of things to note:
    1. `-v ~/results/<experiment_name>:/opt/plant_metrics:rw` gives CLEAVE access to the recently created `~/results/<experiment_name>` directory.
       All data files from the experiment will be output here.
-   2. Values preceding by the `-e` flag correspond to tweakable parameters of CLEAVE; these are the ones we will use to experiment.
+   2. `-e CONTROLLER_ADDR=$(dig +short <region>)` tells CLEAVE to use the controller on device `<region>`.
+   3. All other values preceding by the `-e` flag correspond to tweakable parameters of CLEAVE; these are the ones we will use to experiment.
       The values given above correspond to the defaults for these parameters.
 
 4. Switch back to the Jupyter Server webpage you have open on your local computer and re-run the `analysis.ipynb` notebook by clicking on the double-arrows on the toolbar.
@@ -104,27 +105,34 @@ Below you will find step-by-step instructions on the workflow you should follow 
    This corresponds to a datacenter in Frankfurt.
 2. Execute the CLEAVE plant with the following parameters:
    - `-v ~/results/eu-central_len0.5_srate20:/opt/plant_metrics:rw` (remember, you will have to create the `~/results/eu-central_len0.5_srate20` directory beforehand).
+   - `-e CONTROLLER_ADDR=$(dig +short eu-central-1)`
    - `-e TICK_RATE=120`
    - `-e SAMPLE_RATE=20`
    - `-e EMU_DURATION=30s`
    - `-e PEND_LEN=0.5`
-3. Analyze the results. Is the plant stable?
-4. Now repeat the experiment, setting
+4. Analyze the results. Is the plant stable?
+5. Now repeat the experiment, setting
    - `-v ~/results/eu-central_len1.0_srate20:/opt/plant_metrics:rw` (you will have to create
      the `~/results/eu-central_len1.0_srate20` directory beforehand).
    - `-e PEND_LEN=1.0`
    
    Is the plant stable?
-7. Now set `PEND_LEN=0.5` again, and instead set `SAMPLE_RATE=120` (remember to create the appropriate result directory `~/results/eu-central_len0.5_srate120` and mount it using the `-v` option).
+6. Now set `PEND_LEN=0.5` again, and instead set `SAMPLE_RATE=120` (remember to create the appropriate result directory `~/results/eu-central_len0.5_srate120` and mount it using the `-v` option).
    How do pendulum length and sampling rate interact in relation to plant stability?
 
 ### Experiment 2
 
 1. Deploy the CLEAVE controller on `eu-north-1`.
    This corresponds to a datacenter in Stockholm.
-2. Repeat the same setups as for [Experiment 1](#experiment-1) (again, remember to create appropriate directories and mount them using the `-v` option!).
+2. Repeat the same setups as for [Experiment 1](#experiment-1).
+   Again, remember to create appropriate directories and mount them using the `-v` option; also, remember to point CLEAVE to the correct host with `-e CONTROLLER_ADDR=$(dig +short eu-north-1)`.
 3. Analyze the results.
    How does the system stability of the scenarios on `eu-north-1` compare to those on `eu-west-1`?
 4. Now, set `PEND_LEN=0.5`, and try with `SAMPLE_RATE` values of 20, 30, 40, and 60Hz (once again, remember the directories).
    At which point does the system become stable?
    What does this tell us about latency and system stability?
+
+### Bonus Round
+
+Repeat the above experiments, but deploying a controller on `us-east-1`.
+Is there any way of making the plant stable?
