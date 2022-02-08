@@ -2,35 +2,6 @@
 
 ## Preparations
 
-1. Before starting the exercises, download this repository to your computer.
-You can do so by clicking the green `Code` button above and selecting `Download Zip`.
-
-2. Next, extract the contents of the archive somewhere, then open a terminal (Linux/MacOS) or command prompt/PowerShell (Windows) window and navigate to this folder.
-
-3. Use the command `python3 -m virtualenv ./venv` to initialize a Python virtual environment.
-
-4. Activate the virtual environment with the command `source venv/bin/activate`.
-
-5. Install the necessary Python packages with `pip install -Ur requirements.txt`.
-
-6. Finally, initialize the Jupyter server we will be using for interactive analysis of the data: `jupyter lab`. 
-   Once Jupyter has started, you can reach it by clicking on the link which will be printed on the terminal.
-   Do not close this terminal window until the end of the session.
-
-For example, here's what the whole procedure would look like on Linux/Mac OS, assuming the archive was extracted to `~/Downloads/peca2022`:
-
-```bash
-$ cd ~/Downloads/peca22
-
-$ python3 -m virtualenv ./venv
-
-$ source venv/bin/activate
-
-(venv) $ pip install -Ur requirements.txt
-
-(venv)  $ jupyter lab
-```
-
 ### Virtual Instances
 
 Each group will be assigned a virtual machine on Amazon Web Services (AWS) running Ubuntu, which you will have to use to perform the below exercises.
@@ -49,13 +20,33 @@ To access this instance:
   Point your SSH session to the IP address you have been given, using password authentication and the login user `ubuntu`.
 
 The password for the instance is `pecaclassroom`.
+
+### Jupyter Server
+
+Once you have logged in to your assigned instance on AWS, you will have to start the Jupyter Server we will be using to analyze the experimental results.
+To do so:
+
+1. First create a directory to hold your experimental results: `mkdir -p ~/results`.
+2. Next, start the Jupyter Server with the following command:
+
+   ```bash
+   docker run -it -d -p 80808:8080/tcp \
+       -v ${PWD}/results:/home/jupyter/peca_classroom/experiments \
+       molguin/peca-classroom
+   ```
+   
+   This will start a Docker container running a Jupyter Server listening on port `8080` of your AWS instance.
+3. Once the command has finished, on your local computer, access the remote Jupyter Server by opening a browser and heading to `http://<ip address>:8080`, where `<ip address>` corresponds to the IP address of your AWS instance.
+4. Log in to Jupyter using the password `pecaclassroom`.
+5. Open the `analysis.ipynb` file, which corresponds to a Jupyter Notebook we will use for analyzing experimental results.
+6. Run it once by clicking on the double-arrows on the toolbar to verify that it works.
     
 
 ## Exercises
 
 ### RTT Measurements
 
-The virtual machine you have been assigned is connecte to a number of other machines in different regions of the world: Sweden (eu-north-1), Ireland (eu-west-1), and US East Coast (us-east-1).
+The virtual machine you have been assigned is connected to a number of other machines in different regions of the world: Sweden (eu-north-1), Ireland (eu-west-1), and US East Coast (us-east-1).
 Your first task will be to establish base measurements of the round-trip times of network packets to these regions.
 
 For each region, measure the average round-trip time over 50 packets using `ping`.
@@ -79,37 +70,32 @@ Below you will find step-by-step instructions on the workflow you should follow 
       examples/inverted_pendulum/controller/config.py
   ```
 
-2. Make a directory to collect the results: `mkdir result_dir`.
+2. Make a new directory under the result directory we created for Jupyter in [the previous section](#jupyter-server), to collect the results of the current experiment: `mkdir -p ~/results/<experiment_name>`.
 
 3. Run the plant locally, pointing it to a controller on `<region>`:
 
-  ``` bash
-  docker run --rm -it --network host \
-      -v result_dir:/opt/plant_metrics:rw \
-      -e CONTROLLER_ADDR=<region> \
-      -e CONTROLLER_PORT=50000 \
-      -e TICK_RATE=120 \
-      -e SAMPLE_RATE=20 \
-      -e EMU_DURATION=30s \
-      -e PEND_MASS=0.2 \
-      -e PEND_LEN=1.2 \
-      molguin/cleave:cleave -vvvv run-plant \
-      examples/inverted_pendulum/plant/config.py
-  ```
+   ``` bash
+   docker run --rm -it --network host \
+       -v ${PWD}/results/<experiment_name>:/opt/plant_metrics:rw \
+       -e CONTROLLER_ADDR=<region> \
+       -e CONTROLLER_PORT=50000 \
+       -e TICK_RATE=120 \
+       -e SAMPLE_RATE=20 \
+       -e EMU_DURATION=30s \
+       -e PEND_MASS=0.2 \
+       -e PEND_LEN=1.2 \
+       molguin/cleave:cleave -vvvv run-plant \
+       examples/inverted_pendulum/plant/config.py
+   ```
+   
+   A couple of things to note:
+   1. `-v ~/results/<experiment_name>:/opt/plant_metrics:rw` gives CLEAVE access to the recently created `~/results/<experiment_name>` directory.
+      All data files from the experiment will be output here.
+   2. Values preceding by the `-e` flag correspond to tweakable parameters of CLEAVE; these are the ones we will use to experiment.
+      The values given above correspond to the defaults for these parameters.
 
-  In the above command, each value preceded by `-e` corresponds to a tweakable parameter; these are the ones we will use to experiment.
-  The values given above correspond to the default values for these parameters.
-  Additionally, the `-v` flag allows us to extract results from the container; note how we use it to allow CLEAVE to access the `result_dir` we previously created.
-  
-4. Transfer the results to your local computer, for instance using `scp`: `scp <ip address>:/path/to/result_dir ./results.`
-
-5. Move the `result_dir` to the `experiments` folder of this repository.
-
-6. Head to the Jupyter Lab web page we prepared in the preliminary stage of these exercises, and open the `analysis.ipynb` Jupyter Notebook.
-
-7. Modify the necessary variables at the top of the notebook according to the parametrization of the current experiment, then run the notebook by clicking on the double green arrows in the toolbar.
-
-8. Analyze the results.
+4. Switch back to the Jupyter Server webpage you have open on your local computer and re-run the `analysis.ipynb` notebook by clicking on the double-arrows on the toolbar.
+5. Analyze the results.
 
 
 ### Experiment 1
@@ -117,20 +103,28 @@ Below you will find step-by-step instructions on the workflow you should follow 
 1. Deploy the CLEAVE controller on `eu-central-1`.
    This corresponds to a datacenter in Frankfurt.
 2. Execute the CLEAVE plant with the following parameters:
-   `TICK_RATE=120`, `SAMPLE_RATE=20`, `EMU_DURATION=30s`, and `PEND_LEN=0.5`
+   - `-v ~/results/eu-central_len0.5_srate20:/opt/plant_metrics:rw` (remember, you will have to create the `~/results/eu-central_len0.5_srate20` directory beforehand).
+   - `-e TICK_RATE=120`
+   - `-e SAMPLE_RATE=20`
+   - `-e EMU_DURATION=30s`
+   - `-e PEND_LEN=0.5`
 3. Analyze the results. Is the plant stable?
-4. Now repeat the experiment, setting `PEND_LEN=1.0`. 
+4. Now repeat the experiment, setting
+   - `-v ~/results/eu-central_len1.0_srate20:/opt/plant_metrics:rw` (you will have to create
+     the `~/results/eu-central_len1.0_srate20` directory beforehand).
+   - `-e PEND_LEN=1.0`
+   
    Is the plant stable?
-5. Now set `PEND_LEN=0.5` again, and instead set `SAMPLE_RATE=120`.
+7. Now set `PEND_LEN=0.5` again, and instead set `SAMPLE_RATE=120` (remember to create the appropriate result directory `~/results/eu-central_len0.5_srate120` and mount it using the `-v` option).
    How do pendulum length and sampling rate interact in relation to plant stability?
 
 ### Experiment 2
 
 1. Deploy the CLEAVE controller on `eu-north-1`.
    This corresponds to a datacenter in Stockholm.
-2. Repeat the same setups as for [Experiment 1](#experiment-1).
+2. Repeat the same setups as for [Experiment 1](#experiment-1) (again, remember to create appropriate directories and mount them using the `-v` option!).
 3. Analyze the results.
    How does the system stability of the scenarios on `eu-north-1` compare to those on `eu-west-1`?
-4. Now, set `PEND_LEN=0.5`, and try with `SAMPLE_RATE` values of 20, 30, 40, and 60Hz.
+4. Now, set `PEND_LEN=0.5`, and try with `SAMPLE_RATE` values of 20, 30, 40, and 60Hz (once again, remember the directories).
    At which point does the system become stable?
    What does this tell us about latency and system stability?
