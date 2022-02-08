@@ -116,15 +116,21 @@ Below you will find step-by-step instructions on the workflow you should follow 
 
 1. Deploy the CLEAVE controller on `eu-central-1`.
    This corresponds to a datacenter in Frankfurt.
-2. Execute the CLEAVE plant with three different parametrizations (make sure to use a different output directory for each!):
-   1. `TICK_RATE=120`, `SAMPLE_RATE=20`, `EMU_DURATION=30s`, and `PEND_LEN=0.5`
-   2. `TICK_RATE=120`, `SAMPLE_RATE=20`, `EMU_DURATION=30s`, and `PEND_LEN=0.75`
-   3. `TICK_RATE=120`, `SAMPLE_RATE=20`, `EMU_DURATION=30s`, and `PEND_LEN=1.0`
-3. Analyze the results. How does system stability relate to pendulum arm length? Was any of the above setups stable?
+2. Execute the CLEAVE plant with the following parameters:
+   `TICK_RATE=120`, `SAMPLE_RATE=20`, `EMU_DURATION=30s`, and `PEND_LEN=0.5`
+3. Analyze the results. Is the plant stable?
+4. Now repeat the experiment, setting `PEND_LEN=1.0`. 
+   Is the plant stable?
+5. Now set `PEND_LEN=0.5` again, and instead set `SAMPLE_RATE=120`.
+   How do pendulum length and sampling rate interact in relation to plant stability?
 
 ### Experiment 2
 
 1. Deploy the CLEAVE controller on `eu-north-1`.
    This corresponds to a datacenter in Stockholm.
-2. Repeat the parametrizations of Experiment 1.
-3. Analyze the results. How does the system stability of the scenarios on `eu-north-1` compare to those on `eu-west-1`? 
+2. Repeat the same setups as for [Experiment 1](#experiment-1).
+3. Analyze the results.
+   How does the system stability of the scenarios on `eu-north-1` compare to those on `eu-west-1`?
+4. Now, set `PEND_LEN=0.5`, and try with `SAMPLE_RATE` values of 20, 30, 40, and 60Hz.
+   At which point does the system become stable?
+   What does this tell us about latency and system stability?
