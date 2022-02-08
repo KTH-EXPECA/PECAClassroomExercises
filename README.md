@@ -46,7 +46,7 @@ To do so:
 
 ### RTT Measurements
 
-The virtual machine you have been assigned is connected to a number of other machines in different regions of the world: Sweden (eu-north-1), Ireland (eu-west-1), and US East Coast (us-east-1).
+The virtual machine you have been assigned is connected to a number of other machines in different regions of the world: Sweden (eu-north-1), Germany (eu-central-1), and US East Coast (us-east-1).
 Your first task will be to establish base measurements of the round-trip times of network packets to these regions.
 
 For each region, measure the average round-trip time over 50 packets using `ping`.
