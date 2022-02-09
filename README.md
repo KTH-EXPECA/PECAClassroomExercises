@@ -77,7 +77,7 @@ Below you will find step-by-step instructions on the workflow you should follow 
    ``` bash
    docker run --rm -it --network host \
        -v ${PWD}/results/<experiment_name>:/opt/plant_metrics:rw \
-       -e CONTROLLER_ADDR=$(dig +short <region>) \
+       -e CONTROLLER_ADDRESS=$(dig +short <region>) \
        -e CONTROLLER_PORT=50000 \
        -e TICK_RATE=120 \
        -e SAMPLE_RATE=20 \
@@ -91,7 +91,7 @@ Below you will find step-by-step instructions on the workflow you should follow 
    A couple of things to note:
    1. `-v ~/results/<experiment_name>:/opt/plant_metrics:rw` gives CLEAVE access to the recently created `~/results/<experiment_name>` directory.
       All data files from the experiment will be output here.
-   2. `-e CONTROLLER_ADDR=$(dig +short <region>)` tells CLEAVE to use the controller on device `<region>`.
+   2. `-e CONTROLLER_ADDRESS=$(dig +short <region>)` tells CLEAVE to use the controller on device `<region>`.
    3. All other values preceding by the `-e` flag correspond to tweakable parameters of CLEAVE; these are the ones we will use to experiment.
       The values given above correspond to the defaults for these parameters.
 
@@ -105,7 +105,7 @@ Below you will find step-by-step instructions on the workflow you should follow 
    This corresponds to a datacenter in Frankfurt.
 2. Execute the CLEAVE plant with the following parameters:
    - `-v ~/results/eu-central_len0.5_srate20:/opt/plant_metrics:rw` (remember, you will have to create the `~/results/eu-central_len0.5_srate20` directory beforehand).
-   - `-e CONTROLLER_ADDR=$(dig +short eu-central-1)`
+   - `-e CONTROLLER_ADDRESS=$(dig +short eu-central-1)`
    - `-e TICK_RATE=120`
    - `-e SAMPLE_RATE=20`
    - `-e EMU_DURATION=30s`
@@ -125,7 +125,7 @@ Below you will find step-by-step instructions on the workflow you should follow 
 1. Deploy the CLEAVE controller on `eu-north-1`.
    This corresponds to a datacenter in Stockholm.
 2. Repeat the same setups as for [Experiment 1](#experiment-1).
-   Again, remember to create appropriate directories and mount them using the `-v` option; also, remember to point CLEAVE to the correct host with `-e CONTROLLER_ADDR=$(dig +short eu-north-1)`.
+   Again, remember to create appropriate directories and mount them using the `-v` option; also, remember to point CLEAVE to the correct host with `-e CONTROLLER_ADDRESS=$(dig +short eu-north-1)`.
 3. Analyze the results.
    How does the system stability of the scenarios on `eu-north-1` compare to those on `eu-west-1`?
 4. Now, set `PEND_LEN=0.5`, and try with `SAMPLE_RATE` values of 20, 30, 40, and 60Hz (once again, remember the directories).
