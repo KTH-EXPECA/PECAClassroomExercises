@@ -30,7 +30,7 @@ To do so:
 2. Next, start the Jupyter Server with the following command:
 
    ```bash
-   docker run --rm -it -d -p 80808:8080/tcp \
+   docker run --rm -it -d -p 8080:8080/tcp \
        -v ${PWD}/results:/home/jupyter/peca_classroom/experiments \
        molguin/peca-classroom
    ```
